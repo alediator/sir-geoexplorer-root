@@ -26,11 +26,11 @@ var COPY_ALL_PROPS = ["OUTPUTFORMAT", "DOWNLOAD"];
 // runtime properties. TODO: remove defaults
 var isDebug = java.lang.System.getProperty("app.debug");
 var urlGeoserver = java.lang.System.getProperty("app.proxy.geoserver") ? 
-        java.lang.System.getProperty("app.proxy.geoserver") : "http://sir.dellibertador.gob.cl/geoserver/";
+        java.lang.System.getProperty("app.proxy.geoserver") : "http://localhost:8080/geoserver/";
 var USERNAME_GEOSERVER = java.lang.System.getProperty("app.proxy.geoserver.username") ?
         java.lang.System.getProperty("app.proxy.geoserver.username") : "admin";
 var PASSWORD_GEOSERVER = java.lang.System.getProperty("app.proxy.geoserver.password") ?
-        java.lang.System.getProperty("app.proxy.geoserver.password") : "Z6pzh%4R";
+        java.lang.System.getProperty("app.proxy.geoserver.password") : "geominenserv3r";
 
 /*
  * Geoserver proxy #74477
