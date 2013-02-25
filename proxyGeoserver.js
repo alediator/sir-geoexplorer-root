@@ -26,11 +26,11 @@ var COPY_ALL_PROPS = ["OUTPUTFORMAT", "DOWNLOAD"];
 // runtime properties. TODO: remove defaults
 var isDebug = java.lang.System.getProperty("app.debug");
 var urlGeoserver = java.lang.System.getProperty("app.proxy.geoserver") ? 
-        java.lang.System.getProperty("app.proxy.geoserver") : "http://localhost:8080/geoserver/";
+        java.lang.System.getProperty("app.proxy.geoserver") : "http://sir.dellibertador.gob.cl/geoserver/";
 var USERNAME_GEOSERVER = java.lang.System.getProperty("app.proxy.geoserver.username") ?
         java.lang.System.getProperty("app.proxy.geoserver.username") : "admin";
 var PASSWORD_GEOSERVER = java.lang.System.getProperty("app.proxy.geoserver.password") ?
-        java.lang.System.getProperty("app.proxy.geoserver.password") : "geominenserv3r";
+        java.lang.System.getProperty("app.proxy.geoserver.password") : "Z6pzh%4R";
 
 /*
  * Geoserver proxy #74477
@@ -49,14 +49,7 @@ var PASSWORD_GEOSERVER = java.lang.System.getProperty("app.proxy.geoserver.passw
 };
 
 var handleGeoserverRequest = exports.handleGeoserverRequest = function (request){
-    
-    console.log("Handling " + request.queryParams.url);
-    console.log("CONTENT geoserver--->");
-    console.log("input: " + request.input);
     var body = request.input.read().decodeToString('utf-8');
-    console.log("body: " + body);
-    console.log("<--- CONTENT geoserver");
-
     if (isFullyAuth(request.queryParams.url)){
         var sessionGeoserver = getOpenSession(request);
         var previousCookie = request.headers["Cookie"];
@@ -376,7 +369,6 @@ exports.authenticate = function(request) {
 // }
 
 var pass = exports.pass = function(config) {
-    console.log(config);
     if (typeof config == "string") {
         config = {url: config};
     }
@@ -450,9 +442,6 @@ var createProxyRequestProps = exports.createProxyRequestProps = function(config)
                 //console.log(data);
             }
         }
-        if(data.length > 0){
-            console.log("Data > 0");
-        }
 
         // check if must be copied all url props
         data = checkAndCopyData(config, data);
@@ -485,22 +474,21 @@ function checkAndCopyData(config, data){
             data = {};
         }
 
-        console.log("------- Query parameters ---------");
+        //console.log("------- Query parameters ---------");
         for(var key in config.request.queryParams){
             if(!!key 
                 && !!config.request.queryParams[key]){
                 data[key] = config.request.queryParams[key];
-                console.log(key+"="+config.request.queryParams[key]);
+                //console.log(key+"="+config.request.queryParams[key]);
             }
         }
-        console.log("------- EoF query parameters ---------");
+        //console.log("------- EoF query parameters ---------");
     }
 
     return data;
 }
 
 function proxyPass(config) {
-    console.log("ProxyPass Geoserver");
     var response;
     var outgoing = createProxyRequestProps(config);
     var incoming = config.request;
