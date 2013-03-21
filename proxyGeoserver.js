@@ -14,9 +14,8 @@ var URLS_GEOSERVER_NO_PROXIED = [
     "getCapabilities", 
     "GetCapabilities", 
     "describeFeatureType",
-    "DescribeFeatureType"
-    //,
-    //"wfs" //TODO: to edit wfs
+    "DescribeFeatureType",
+    "wfs" //TODO: Find a way to make wfs petitions without skipping the proxy!
     ];
 // fully login needed
 var IS_FULLY_AUTH = ["rest/imports"];
