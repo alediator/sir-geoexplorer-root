@@ -519,7 +519,7 @@ function proxyPass(config) {
         && !!outgoing.data["FILENAME"]){
         if(outgoing.data["DOWNLOAD"]){
             headers.unset("Content-Disposition");
-            headers.set("Content-Disposition", "attachment; filename="+ outgoing.data["FILENAME"] +".kml");
+            headers.set("Content-Disposition", "attachment; filename="+ outgoing.data["FILENAME"]);
         }
     }
     return {
