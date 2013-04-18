@@ -2,7 +2,7 @@ var clientRequest = require("ringo/httpclient").request;
 var Headers = require("ringo/utils/http").Headers;
 var MemoryStream = require("io").MemoryStream;
 var objects = require("ringo/utils/objects");
-var proxyGeoserver = require("./proxyGeoserver");
+//var proxyGeoserver = require("./proxyGeoserver");
 
 
 var URL = java.net.URL;
@@ -11,17 +11,17 @@ var app = exports.app = function(request) {
     var response;
     var url = request.queryParams.url;
     if (url) {
-        console.log("url");
-        // Geoserver proxy #74477        
-        if(proxyGeoserver.isGeoServerURL(request)){
-            response = proxyGeoserver.handleGeoserverRequest(request);
-        }else{
+        // console.log("url");
+        // // Geoserver proxy #74477        
+        // if(proxyGeoserver.isGeoServerURL(request)){
+        //     response = proxyGeoserver.handleGeoserverRequest(request);
+        // }else{
 
             response = proxyPass({
                 request: request, 
                 url: url
             });
-        }
+        // }
 
     } else {
         response = responseForStatus(400, "Request must contain url parameter.");
@@ -30,7 +30,7 @@ var app = exports.app = function(request) {
 };
 
 var pass = exports.pass = function(config) {
-    console.log("pass");
+    //console.log("pass");
     if (typeof config == "string") {
         config = {url: config};
     }
@@ -46,7 +46,7 @@ var pass = exports.pass = function(config) {
 };
 
 var getUrlProps = exports.getUrlProps = function(url) {
-    console.log("getUrlProps");
+    //console.log("getUrlProps");
     var o, props;
     try {
         o = new URL(url);
@@ -83,7 +83,7 @@ var getUrlProps = exports.getUrlProps = function(url) {
 };
 
 var createProxyRequestProps = exports.createProxyRequestProps = function(config) {
-    console.log("createProxyRequestProps");
+    //console.log("createProxyRequestProps");
     var props;
     var request = config.request;
     var url = config.url;
@@ -118,8 +118,8 @@ var createProxyRequestProps = exports.createProxyRequestProps = function(config)
     return props;
 };
 
-function proxyPass(config) {
-    console.log("proxyPass");
+var proxyPass = exports.proxyPass = function proxyPass(config) {
+    //console.log("proxyPass");
     var response;
     var outgoing = createProxyRequestProps(config);
     var incoming = config.request;
@@ -151,12 +151,50 @@ function proxyPass(config) {
     };
 }
 
-var showParams = exports.showParams =  function (keyValues){
-    for(var key in keyValues){
-             if(!!key 
+var shows = 0;
+
+var showParams = exports.showParams =  function (keyValues, parent, maxLevel, deep){
+    // console.log("deep -- > " + deep);
+    // console.log("maxLevel -- > " + maxLevel);
+    var maxDeepLevel = maxLevel ? maxLevel: 1;
+    var deepLevel = deepLevel ? deepLevel : 0;
+    if(maxDeepLevel == deepLevel){
+        return null;
+    }else{
+        for(var key in keyValues){
+            if(!!key 
                 && !!keyValues[key]){
                 //data[key] = config.request.queryParams[key];
-                console.log(key+"="+keyValues[key]);
+                var keyToShow = parent ? parent + '.' + key : key;
+                if(!isFunctionOrObject(keyValues[key])){
+                    if((keyToShow.length +  keyValues[key].toString().length) < 50){
+                        shows++;
+                        if(shows < 20)
+                            try{
+                                console.log(keyToShow+"="+keyValues[key]);
+                            }catch(e){
+                                // nothing
+                            }
+                    }
+                }else{
+                    if((typeof keyValues[key] === 'object') 
+                            && deepLevel < maxDeepLevel){
+                        //showParams(keyValues[key], keyToShow, maxDeepLevel, deepLevel + 1);
+                    }   
+                }
             }
         }
+    }
+}
+
+function isFunctionOrObject(object) {
+    // console.log("HERE --> " + object);
+    // console.log(typeof object);
+    try{
+        return object 
+            && ((typeof object === 'function') 
+                || (typeof object === 'object'));
+    }catch (e){
+        return false;
+    }
 }
