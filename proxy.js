@@ -2,8 +2,8 @@ var clientRequest = require("ringo/httpclient").request;
 var Headers = require("ringo/utils/http").Headers;
 var MemoryStream = require("io").MemoryStream;
 var objects = require("ringo/utils/objects");
-var proxyGeoserver = require("./proxyGeoserver");
 
+var isDebug = java.lang.System.getProperty("app.debug");
 
 var URL = java.net.URL;
 
@@ -11,17 +11,15 @@ var app = exports.app = function(request) {
     var response;
     var url = request.queryParams.url;
     if (url) {
-        console.log("url");
-        // Geoserver proxy #74477        
-        if(proxyGeoserver.isGeoServerURL(request)){
-            response = proxyGeoserver.handleGeoserverRequest(request);
-        }else{
 
-            response = proxyPass({
-                request: request, 
-                url: url
-            });
+        if(isDebug){
+            console.log("Proxing --> " + url);
         }
+
+        response = proxyPass({
+            request: request, 
+            url: url
+        });
 
     } else {
         response = responseForStatus(400, "Request must contain url parameter.");
@@ -30,7 +28,7 @@ var app = exports.app = function(request) {
 };
 
 var pass = exports.pass = function(config) {
-    console.log("pass");
+    //console.log("pass");
     if (typeof config == "string") {
         config = {url: config};
     }
@@ -46,7 +44,7 @@ var pass = exports.pass = function(config) {
 };
 
 var getUrlProps = exports.getUrlProps = function(url) {
-    console.log("getUrlProps");
+    //console.log("getUrlProps");
     var o, props;
     try {
         o = new URL(url);
@@ -83,7 +81,17 @@ var getUrlProps = exports.getUrlProps = function(url) {
 };
 
 var createProxyRequestProps = exports.createProxyRequestProps = function(config) {
-    console.log("createProxyRequestProps");
+    if(isDebug){
+        // console.log("************************************  createProxyRequestProps");
+        // console.log("***************config*************");
+        // showParams(config);
+        // console.log("***************request*************");
+        // showParams(config.request);
+        // console.log("***************request.postParams*************");
+        // showParams(config.request.postParams);
+        // console.log("***************request.queryParams*************");
+        // showParams(config.request.queryParams);
+    }
     var props;
     var request = config.request;
     var url = config.url;
@@ -98,13 +106,8 @@ var createProxyRequestProps = exports.createProxyRequestProps = function(config)
             headers.unset("Authorization");
             headers.unset("Cookie");
         }
-        var data;
         var method = request.method;
-        if (method == "PUT" || method == "POST") {
-            if (request.headers.get("content-length")) {
-                data = request.input;
-            }
-        }
+        var data = obtainData(request, method);
         props = {
             url: urlProps.url,
             method: request.method,
@@ -115,17 +118,51 @@ var createProxyRequestProps = exports.createProxyRequestProps = function(config)
             data: data
         };
     }
+    if(isDebug){
+        // console.log("************************************  EoF createProxyRequestProps");
+    }
     return props;
 };
 
+function obtainData (request, method){
+    var data;
+    if (method == "PUT") { // put PUT request.input
+        if (request.headers.get("content-length")) {
+            data = request.input;
+        }
+    }else if(method == "POST"){ // POST can use postParams || request.input
+        if(!!request.postParams){
+            data = request.postParams
+        }else if (request.headers.get("content-length")) {
+            data = request.input;   
+        }
+    }else if(method == "GET"){ // GET can use queryParams || request.input
+        if(!!request.queryParams){ 
+            data = config.request.queryParams
+        }else if (request.headers.get("content-length")) {
+            data = request.input;   
+        }
+    } 
+    return data;
+}
+
 function proxyPass(config) {
-    console.log("proxyPass");
+    if(isDebug){
+        console.log("************************************ proxyPass ************************************");
+    }
     var response;
     var outgoing = createProxyRequestProps(config);
     var incoming = config.request;
     if (!outgoing || outgoing.scheme !== incoming.scheme) {
         response = responseForStatus(400, "The url parameter value must be absolute url with same scheme as request.");
     } else {
+        if(isDebug){
+            console.log("*************** outgoing -->");
+            showParams(outgoing);
+            console.log("*************** outgoing.data -->");
+            showParams(outgoing.data);
+        }
+
         // re-issue request
         var exchange = clientRequest({
             url: outgoing.url,
@@ -143,6 +180,9 @@ function proxyPass(config) {
         // strip out authorization and cookie headers
         headers.unset("WWW-Authenticate");
         headers.unset("Set-Cookie");
+    }
+    if(isDebug){
+        console.log("**********************************  EoF proxyPass **********************************");
     }
     return {
         status: exchange.status,
