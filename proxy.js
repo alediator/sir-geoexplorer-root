@@ -138,7 +138,7 @@ function obtainData (request, method){
         }
     }else if(method == "GET"){ // GET can use queryParams || request.input
         if(!!request.queryParams){ 
-            data = config.request.queryParams
+            data = request.queryParams
         }else if (request.headers.get("content-length")) {
             data = request.input;   
         }
