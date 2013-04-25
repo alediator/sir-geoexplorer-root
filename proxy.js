@@ -59,6 +59,7 @@ var getUrlProps = exports.getUrlProps = function(url) {
             // https://github.com/ringo/ringojs/issues/issue/121
             // but, it could make sense to keep it here as well
             [username, password] = userInfo.split(":");
+           
             url = url.replace(userInfo + "@", "");
         }
         var port = o.getPort();
@@ -143,6 +144,12 @@ function obtainData (request, method){
             data = request.input;   
         }
     } 
+
+    if(data.url) {
+        // Prevents url from being passed as parameter.        
+        delete data.url;
+    }
+
     return data;
 }
 
