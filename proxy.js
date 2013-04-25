@@ -145,7 +145,7 @@ function obtainData (request, method){
         }
     } 
 
-    if(data.url) {
+    if(!!data && data.url) {
         // Prevents url from being passed as parameter.        
         delete data.url;
     }
